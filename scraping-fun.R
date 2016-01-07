@@ -1,4 +1,5 @@
 library("rvest")
+library("stringr")
 
 process_page <- function(url) {
   page_html <- url %>% read_html
@@ -39,13 +40,29 @@ get_artists_by_letter <- function(letter) {
 }
 
 get_paintings_for_artist <- function(artist) {
-  artist_url <- file.path(sprintf("http://www.wikiart.org/en/%s//mode/all-paintings", artist))
-  page_html <- artist_url %>% read_html
+  artist_homepage <- file.path(sprintf("http://www.wikiart.org/en/%s//mode/all-paintings", artist))
+  page_html <- artist_homepage %>% read_html
+
+  all_urls <- page_html %>%
+    html_nodes(".pager-items a") %>%
+    html_attr("href") %>%
+    unique() %>% na.omit()
+
+  paintings_paths <- vector(length = length(all_urls), mode = "list")
+  for(i in seq_along(paintings_paths)) {
+    paintings_paths[[i]] <- get_paintings_on_page(all_urls[i])
+  }
+
+  unlist(paintings_paths, use.names = FALSE)
+}
+
+get_paintings_on_page <- function(artist_subpage) {
+  cur_page <- file.path(artist_subpage)
+  page_html <- cur_page %>% read_html
   paintings <- page_html %>%
     html_nodes("#paintings .pb5 a") %>%
     html_attr("href")
-  paintings_paths <- file.path("http://www.wikiart.org", paintings)
-  return (paintings_paths)
+  file.path("http://www.wikiart.org", paintings)
 }
 
 clean_contains_data <- function(page_html, term) {
