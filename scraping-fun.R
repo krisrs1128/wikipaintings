@@ -1,5 +1,4 @@
 library("rvest")
-library("stringr")
 
 process_page <- function(url) {
   page_html <- url %>% read_html
