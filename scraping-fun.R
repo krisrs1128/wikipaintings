@@ -70,4 +70,3 @@ clean_contains_data <- function(page_html, term) {
   term_data <- gsub("\r||\t||\n", "", strsplit(term_data[1], ":")[[1]][2])
   return (term_data)
 }
-
